@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -54,8 +55,9 @@ Widget emailText() {
       } else {
         return null;
       }
-    },onSaved: (String value){
-      emailString=value.trim();
+    },
+    onSaved: (String value) {
+      emailString = value.trim();
     },
   );
 }
@@ -78,11 +80,54 @@ Widget passwordText() {
       } else {
         return null;
       }
-    },onSaved: (String value){
-      passString=value.trim();
+    },
+    onSaved: (String value) {
+      passString = value.trim();
     },
   );
 }
+
+Future<void> registerThread() async {
+  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  await firebaseAuth
+      .createUserWithEmailAndPassword(email: emailString, password: passString)
+      .then((response) {
+    print('Register Success for email=$emailString');
+  }).catchError((response) {
+    String title = response.code;
+    String message = response.message;
+    print('title=$title \n Message=$message');
+   // myAlert(title, message);
+  });
+}
+
+//  myAlert(String title, String message)  {
+  
+//     showDialog(
+//         context: null,
+//         builder: (BuildContext context) {
+//           return AlertDialog(
+//             title: ListTile(
+//               leading: Icon(
+//                 Icons.add_alert,
+//                 color: Colors.red,
+//               ),
+//               title: Text(title),
+//             ),
+//             content: Text(message),
+//             actions: <Widget>[
+//               FlatButton(
+//                   onPressed: () {
+//                     Navigator.of(context).pop();
+//                   },
+//                   child: Text('OK'))
+//             ],
+//           );
+//         });
+
+    
+//   }
+
 
 class _SignUpState extends State<SignUp> {
   @override
@@ -108,7 +153,10 @@ class _SignUpState extends State<SignUp> {
                   if (formkey.currentState.validate()) {
                     formkey.currentState.save();
 
-                    print('Name=$nameString \n Email=$emailString \n Password=$passString');
+                    print(
+                        'Name=$nameString \n Email=$emailString \n Password=$passString');
+
+                    registerThread();
                   }
                 },
                 child: Text(
