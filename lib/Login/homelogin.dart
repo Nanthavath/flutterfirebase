@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterfirebase/Login/authen.dart';
 import 'package:flutterfirebase/Login/signup.dart';
 import 'package:flutterfirebase/service/my_service.dart';
 
@@ -60,7 +61,11 @@ class _HomeLoginState extends State<HomeLogin> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   RaisedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      MaterialPageRoute materialPageRoute = MaterialPageRoute(
+                          builder: (BuildContext context) => Authen());
+                      Navigator.of(context).push(materialPageRoute);
+                    },
                     child: Text('Sign In'),
                   ),
                   SizedBox(
