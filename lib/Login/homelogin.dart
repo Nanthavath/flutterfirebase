@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfirebase/Login/signup.dart';
+import 'package:flutterfirebase/service/my_service.dart';
 
 class HomeLogin extends StatefulWidget {
   @override
@@ -20,6 +22,24 @@ Widget appName() {
 
 class _HomeLoginState extends State<HomeLogin> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    checkStatus();
+  }
+
+  Future<void> checkStatus() async {
+    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+    FirebaseUser firebaseUser = await firebaseAuth.currentUser();
+    if (firebaseUser != null) {
+      MaterialPageRoute materialPageRoute =
+          MaterialPageRoute(builder: (BuildContext context) => MyService());
+      Navigator.of(context).pushAndRemoveUntil(
+          materialPageRoute, (Route<dynamic> route) => false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: SafeArea(
@@ -28,7 +48,13 @@ class _HomeLoginState extends State<HomeLogin> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             showLogo(),
+            SizedBox(
+              height: 30,
+            ),
             appName(),
+            SizedBox(
+              height: 15,
+            ),
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -42,7 +68,8 @@ class _HomeLoginState extends State<HomeLogin> {
                   ),
                   RaisedButton(
                     onPressed: () {
-                      MaterialPageRoute materialPageRoute=MaterialPageRoute(builder: (BuildContext context)=>SignUp());
+                      MaterialPageRoute materialPageRoute = MaterialPageRoute(
+                          builder: (BuildContext context) => SignUp());
                       Navigator.of(context).push(materialPageRoute);
                     },
                     child: Text('Sign Up'),

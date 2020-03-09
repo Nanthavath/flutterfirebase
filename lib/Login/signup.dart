@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutterfirebase/service/my_service.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -87,47 +87,64 @@ Widget passwordText() {
   );
 }
 
-Future<void> registerThread() async {
+Future<void> registerThread(BuildContext context) async {
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   await firebaseAuth
       .createUserWithEmailAndPassword(email: emailString, password: passString)
       .then((response) {
     print('Register Success for email=$emailString');
+    setupDisplayname(context);
   }).catchError((response) {
     String title = response.code;
     String message = response.message;
     print('title=$title \n Message=$message');
-   // myAlert(title, message);
+    myAlert(title, message, context);
   });
 }
 
-//  myAlert(String title, String message)  {
-  
-//     showDialog(
-//         context: null,
-//         builder: (BuildContext context) {
-//           return AlertDialog(
-//             title: ListTile(
-//               leading: Icon(
-//                 Icons.add_alert,
-//                 color: Colors.red,
-//               ),
-//               title: Text(title),
-//             ),
-//             content: Text(message),
-//             actions: <Widget>[
-//               FlatButton(
-//                   onPressed: () {
-//                     Navigator.of(context).pop();
-//                   },
-//                   child: Text('OK'))
-//             ],
-//           );
-//         });
+Future<void> setupDisplayname(BuildContext context) async {
+  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  await firebaseAuth.currentUser().then((response) {
+    UserUpdateInfo userUpdateInfo = UserUpdateInfo();
+    userUpdateInfo.displayName = nameString;
+    response.updateProfile(userUpdateInfo);
 
-    
-//   }
+    MaterialPageRoute materialPageRoute =
+        MaterialPageRoute(builder: (BuildContext context) => MyService());
+    Navigator.of(context)
+        .pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
+  });
+}
 
+myAlert(String title, String message, BuildContext context) {
+  showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: ListTile(
+            leading: Icon(
+              Icons.add_alert,
+              color: Colors.red,
+              size: 45,
+            ),
+            title: Text(
+              title,
+              style: TextStyle(
+                color: Colors.red,
+              ),
+            ),
+          ),
+          content: Text(message),
+          actions: <Widget>[
+            FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'))
+          ],
+        );
+      });
+}
 
 class _SignUpState extends State<SignUp> {
   @override
@@ -156,7 +173,7 @@ class _SignUpState extends State<SignUp> {
                     print(
                         'Name=$nameString \n Email=$emailString \n Password=$passString');
 
-                    registerThread();
+                    registerThread(context);
                   }
                 },
                 child: Text(
