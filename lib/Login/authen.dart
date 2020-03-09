@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfirebase/Login/homelogin.dart';
 import 'package:flutterfirebase/Login/signup.dart';
+import 'package:flutterfirebase/service/my_service.dart';
 
 class Authen extends StatefulWidget {
   @override
@@ -9,6 +11,10 @@ class Authen extends StatefulWidget {
 
 class _AuthenState extends State<Authen> {
 //Explicit
+
+  final formKey = GlobalKey<FormState>();
+  String emailString, passwordString;
+
 //Method
 
   Widget backButton() {
@@ -24,13 +30,16 @@ class _AuthenState extends State<Authen> {
 
   Widget content() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          showAppname(),
-          emailText(),
-          passwordText(),
-        ],
+      child: Form(
+        key: formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            showAppname(),
+            emailText(),
+            passwordText(),
+          ],
+        ),
       ),
     );
   }
@@ -63,12 +72,15 @@ class _AuthenState extends State<Authen> {
   Widget emailText() {
     return Container(
       width: 300,
-      child: TextField(
+      child: TextFormField(
         keyboardType: TextInputType.emailAddress,
         decoration: InputDecoration(
           icon: Icon(Icons.email),
           labelText: 'Email',
         ),
+        onSaved: (String value) {
+          emailString = value;
+        },
       ),
     );
   }
@@ -76,13 +88,63 @@ class _AuthenState extends State<Authen> {
   Widget passwordText() {
     return Container(
       width: 300,
-      child: TextField(
+      child: TextFormField(
         obscureText: true,
         decoration: InputDecoration(
           icon: Icon(Icons.lock),
           labelText: 'Password',
         ),
+        onSaved: (String value) {
+          passwordString = value;
+        },
       ),
+    );
+  }
+
+  Future<void> checkAuthen() async {
+    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+    await firebaseAuth
+        .signInWithEmailAndPassword(
+            email: emailString, password: passwordString)
+        .then((response) {
+      print('Login Success');
+      MaterialPageRoute materialPageRoute =
+          MaterialPageRoute(builder: (BuildContext context) => MyService());
+      Navigator.of(context).pushAndRemoveUntil(
+          materialPageRoute, (Route<dynamic> rout) => false);
+    }).catchError((response) {
+      String title = response.code;
+      String message = response.message;
+      myAlert(title, message);
+    });
+  }
+
+  void myAlert(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: ListTile(
+            leading: Icon(
+              Icons.add_alert,
+              color: Colors.red,
+              size: 40,
+            ),
+            title: Text(
+              title,
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+          content: Text(message),
+          actions: <Widget>[
+            FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'))
+          ],
+        );
+      },
     );
   }
 
@@ -98,7 +160,11 @@ class _AuthenState extends State<Authen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          formKey.currentState.save();
+          print('email=$emailString password=$passwordString');
+          checkAuthen();
+        },
         child: Icon(Icons.navigate_next),
       ),
     );
